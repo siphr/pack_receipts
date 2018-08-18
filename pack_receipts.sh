@@ -7,6 +7,7 @@
 #   * paired indices are essential
 #
 # pack_receipts.sh <directory_containing_scans> <image_format> <prefix> <convert_valid_crop> <convert_valid_scale>
+# sh ../pack_receipts/pack_receipts.sh . png 201808 750x1200+8 800
 
 source_dir=$1
 source_ext=$2
