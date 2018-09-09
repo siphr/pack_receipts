@@ -3,39 +3,27 @@
 # Requirements:
 # * ImageMagick
 # * bash
-# * duplex scan in pairs e.g: rec0000.jpg rec0001.png
-#   * paired indices are essential
 #
-# pack_receipts.sh <directory_containing_scans> <image_format> <prefix> <convert_valid_crop> <convert_valid_scale>
-# sh ../pack_receipts/pack_receipts.sh . png 201808 750x1200+8 800
+# pack_receipts.sh <front_img> <back_img> <convert_valid_crop> <convert_valid_scale> <output_file_with_extension>
+# ~/work/pack_receipts/pack_receipts.sh 201808-0040.png 201808-0041.png 800x1150+8 800x640 test.png
 
-source_dir=$1
-source_ext=$2
-source_pfx=$3
-crop_prm=$4
-scale_prm=$5
-output_dir="${source_dir}/output"
 
-count=`ls $source_dir/$source_pfx*.$source_ext | wc -l`
+in0=$1
+in1=$2
+crop_prm=$3
+scale_prm=$4
+out=$5
 
 #echo $crop_prm
 #echo $scale_prm
 
-index=1
-for (( i=0; i<$count; i+=2 )) ; do
-    # zero-padding indices
-    printf -v k "%04d" $((i))
-    printf -v j "%04d" $((i+1))
-    printf -v sindex "%04d" $((index))
-    echo "Processing: $k $j"
+# zero-padding indices
+echo "Processing: $in0 $in1"
 
-    # crop the image scans to the give resolution
-    convert "${source_dir}/$source_pfx-*${k}.$source_ext" -crop $crop_prm "/tmp/crop1.$source_ext"
-    convert "${source_dir}/$source_pfx-*${j}.$source_ext" -crop $crop_prm "/tmp/crop2.$source_ext"
+# crop the image scans to the give resolution
+convert "${in0}" -crop $crop_prm "/tmp/crop1"
+convert "${in1}" -crop $crop_prm "/tmp/crop2"
 
-    mkdir -p "${output_dir}"
-    # merge and down scale
-    convert /tmp/crop1.$source_ext /tmp/crop2.$source_ext +append /tmp/$source_pfx-$index.$source_ext
-    convert /tmp/$source_pfx-$index.$source_ext -scale $scale_prm $output_dir/$source_pfx-scaled-$sindex.$source_ext
-    ((index+=1))
-done
+# merge and down scale
+convert /tmp/crop1 /tmp/crop2 +append /tmp/crop
+convert /tmp/crop -scale $scale_prm $out
